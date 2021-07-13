@@ -2,12 +2,16 @@ from PIL import Image
 import imagehash
 import os
 import numpy as np
+from GUI import Ui_MainWindow
 
+
+#add rotate image checker
 
 def find_duplicates(directory):
     fnames = os.listdir(directory)
     image_dict = {}
     duplicates = []
+    originals = []
     print("Finding Duplicates Now!\n")
     for image in fnames:
         path = os.path.join(directory, image)
@@ -19,16 +23,18 @@ def find_duplicates(directory):
                     print("Duplicate: {} \nOriginal: {}!\n".format(
                         image, image_dict[temp_hash]))
                     duplicates.append(image)
+                    originals.append(image_dict[temp_hash])
                 else:
                     print("Duplicate: {} \nOriginal: {}!\n".format(
                         image_dict[temp_hash], image))
                     duplicates.append(image_dict[temp_hash])
+                    originals.append(image)
                     image_dict[temp_hash] = image
             else:
                 image_dict[temp_hash] = image
 
     if len(duplicates) != 0:
-        return duplicates
+        return duplicates, originals
     else:
         print("No Duplicates Found")
         return None
@@ -57,7 +63,8 @@ else:
 
 
 # Remove Duplicates
-
-directory = "Pictures"
-duplicates = find_duplicates(directory)
-print(duplicates)
+if __name__ == "__main__":
+    directory = "Pictures"
+    duplicates, originals = find_duplicates(directory)
+    print(duplicates)
+    print(originals)
