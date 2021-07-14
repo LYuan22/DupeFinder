@@ -2,10 +2,11 @@ from PIL import Image
 import imagehash
 import os
 import numpy as np
-from GUI import Ui_MainWindow
 
 
-#add rotate image checker, maybe change originals to hash so that multiple originals go under the same table
+#maybe change originals to hash so that multiple originals go under the same table
+#add hash size as a 'degree of similarity' for the algorithm'
+
 
 def find_duplicates(directory):
     fnames = os.listdir(directory)
@@ -16,17 +17,28 @@ def find_duplicates(directory):
     for image in fnames:
         path = os.path.join(directory, image)
         with Image.open(path) as img:
-            temp_hash = imagehash.average_hash(img, 8)  #hashsize 8
+
+            img90, img180, img270 = rotate_image(img)
+
+            temp_hash = imagehash.average_hash(img, 8)
+            temp_hash90 = imagehash.average_hash(img90, 8)
+            temp_hash180 = imagehash.average_hash(img180, 8)
+            temp_hash270 = imagehash.average_hash(img270, 8)
+
+            if temp_hash90 in image_dict:
+                temp_hash = temp_hash90
+            elif temp_hash180 in image_dict:
+                temp_hash = temp_hash180
+            elif temp_hash270 in image_dict:
+                temp_hash = temp_hash270
+
+
             if temp_hash in image_dict:
                 #makes sure that the Original image is the one with higher resolution
                 if get_image_size(directory, image, image_dict[temp_hash]):
-                    print("Duplicate: {} \nOriginal: {}!\n".format(
-                        image, image_dict[temp_hash]))
                     duplicates.append(image)
                     originals.append(image_dict[temp_hash])
                 else:
-                    print("Duplicate: {} \nOriginal: {}!\n".format(
-                        image_dict[temp_hash], image))
                     duplicates.append(image_dict[temp_hash])
                     originals.append(image)
                     image_dict[temp_hash] = image
@@ -47,7 +59,13 @@ def get_image_size(dir, image1, image2):
         return True
     else:
         return False
-        
+
+def rotate_image(img):
+    img90 = img.transpose(Image.ROTATE_90)
+    img180 = img90.rotate(Image.ROTATE_90)
+    img270 = img180.rotate(Image.ROTATE_90)
+    return img90, img180, img270
+
 """ DELETE STUFF (RIPPED FORM OLD THING)
 a = input("Do you want to delete these {} Images? Press Y or N:  ".format(len(duplicates)))
 space_saved = 0
@@ -62,9 +80,11 @@ else:
     """
 
 
-# Remove Duplicates
 if __name__ == "__main__":
     directory = "Pictures"
     duplicates, originals = find_duplicates(directory)
+    for i in range(len(duplicates)):
+         print("Duplicate: {} \nOriginal: {}!\n".format(
+                        duplicates[i], originals[i]))
     print(duplicates)
     print(originals)
