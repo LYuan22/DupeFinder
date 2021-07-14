@@ -5,7 +5,7 @@ import numpy as np
 from GUI import Ui_MainWindow
 
 
-#add rotate image checker
+#add rotate image checker, maybe change originals to hash so that multiple originals go under the same table
 
 def find_duplicates(directory):
     fnames = os.listdir(directory)
