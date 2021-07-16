@@ -1,80 +1,35 @@
 from PIL import Image
 from hash import average_hash
 import os
-import numpy as np
+from image_funcs import check_ifimage, rotate_checker, get_image_size, _dict_array_update
 
 
 #maybe change originals to hash so that multiple originals go under the same table
-#add hash size as a 'degree of similarity' for the algorithm'
-
-
-def find_duplicates(directory):
+def find_duplicates(directory, hash_size):
     fnames = os.listdir(directory)
-    image_dict = {}
-    duplicates = []
-    originals = []
+    originals = {}
+    duplicates = {}
     print("Finding Duplicates Now!\n")
     for image in fnames:
         path = os.path.join(directory, image)
         if check_ifimage(path) == True:
             with Image.open(path) as img:
+                #Checks if rotated picture is in originals, otherwise gives normal temp_hash
+                temp_hash = rotate_checker(originals, img, hash_size)
 
-                img90, img180, img270 = rotate_image(img)
-
-                temp_hash = average_hash(img, 8)
-                temp_hash90 = average_hash(img90, 8)
-                temp_hash180 = average_hash(img180, 8)
-                temp_hash270 = average_hash(img270, 8)#move these to if statement
-
-                if temp_hash90 in image_dict:
-                    temp_hash = temp_hash90
-                elif temp_hash180 in image_dict:
-                    temp_hash = temp_hash180
-                elif temp_hash270 in image_dict:
-                    temp_hash = temp_hash270
-
-
-                if temp_hash in image_dict:
+                if temp_hash in originals:
+                    temp = originals[temp_hash]
                     #makes sure that the Original image is the one with higher resolution
-                    if get_image_size(directory, image, image_dict[temp_hash]):
-                        duplicates.append(image)
-                        originals.append(image_dict[temp_hash])
+                    if get_image_size(directory, image, temp):
+                        originals[temp_hash] = temp
+                        _dict_array_update(duplicates, temp_hash, image)
                     else:
-                        duplicates.append(image_dict[temp_hash])
-                        originals.append(image)
-                        image_dict[temp_hash] = image
+                        originals[temp_hash] = image
+                        _dict_array_update(duplicates, temp_hash, temp)
                 else:
-                    image_dict[temp_hash] = image
+                    originals[temp_hash] = image
+    return duplicates, originals
 
-    if len(duplicates) != 0:
-        return duplicates, originals
-    else:
-        print("No Duplicates Found")
-        return None
-
-#function gets the size of both images, returns True if image2 is larger
-def get_image_size(dir, image1, image2):
-    size1 = os.stat(os.path.join(dir, image1)).st_size
-    size2 = os.stat(os.path.join(dir, image2)).st_size
-    if size1 < size2:
-        return True
-    else:
-        return False
-
-#rotates image to ensure that the images arent just rotations of previos images 
-def rotate_image(img):
-    img90 = img.transpose(Image.ROTATE_90)
-    img180 = img90.rotate(Image.ROTATE_90)
-    img270 = img180.rotate(Image.ROTATE_90)
-    return img90, img180, img270
-
-#ignores files that are not some sort of image
-def check_ifimage(path):
-    try:
-        Image.open(path)
-    except IOError:
-        return False
-    return True
 
 """ DELETE STUFF (RIPPED FORM OLD THING)
 a = input("Do you want to delete these {} Images? Press Y or N:  ".format(len(duplicates)))
@@ -91,10 +46,17 @@ else:
 
 
 if __name__ == "__main__":
-    directory = "vyvan"
-    duplicates, originals = find_duplicates(directory)
-    for i in range(len(duplicates)):
-         print("Duplicate: {} \nOriginal: {}!\n".format(
-                        duplicates[i], originals[i]))
-    print(duplicates)
-    print(originals)
+    directory = "Pictures"
+    counter = 0
+    duplicates, originals = find_duplicates(directory, 8)
+    hashes = originals.keys()
+    for key in hashes:
+        if key in duplicates:
+            dupes = duplicates[key]
+            print("Original: {}".format(originals[key]))
+            for i in dupes:
+                print("Duplicate: {}".format(i))
+                counter = counter + 1
+            print()
+    if counter == 0:
+        print("No Duplicates Found")
