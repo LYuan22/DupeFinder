@@ -1,10 +1,9 @@
 from PIL import Image
 from hash import average_hash
 import os
-from image_funcs import check_ifimage, rotate_checker, get_image_size, _dict_array_update
+from image_funcs import check_ifimage, hash_rotate, get_image_size, _dict_array_update
 
 
-#maybe change originals to hash so that multiple originals go under the same table
 def find_duplicates(directory, hash_size):
     fnames = os.listdir(directory)
     originals = {}
@@ -15,7 +14,7 @@ def find_duplicates(directory, hash_size):
         if check_ifimage(path) == True:
             with Image.open(path) as img:
                 #Checks if rotated picture is in originals, otherwise gives normal temp_hash
-                temp_hash = rotate_checker(originals, img, hash_size)
+                temp_hash = hash_rotate(originals, img, hash_size)
 
                 if temp_hash in originals:
                     temp = originals[temp_hash]
@@ -43,12 +42,14 @@ if(a.strip().lower() == "y"):
     print("\n\nYou saved {} mb of Space!".format(round(space_saved/1000000),2))
 else:
     """
-
+#90% - 20
+#100% - 45
 
 if __name__ == "__main__":
     directory = "Pictures"
     counter = 0
-    duplicates, originals = find_duplicates(directory, 8)
+    duplicates, originals = find_duplicates(directory, 45)
+
     hashes = originals.keys()
     for key in hashes:
         if key in duplicates:
@@ -60,3 +61,15 @@ if __name__ == "__main__":
             print()
     if counter == 0:
         print("No Duplicates Found")
+
+
+
+""" USE THIS FOR SIMILARITY
+    path = os.path.join(directory, 'dead giant.jpg')
+    path1 = os.path.join(directory, 'giant filter.jpg')
+    img = Image.open(path)
+    img1 = Image.open(path1)
+    hash = average_hash(img, 40)
+    hash1 = average_hash(img1, 40)
+    print(hash - hash1) #use this to do similarity as well as the scale
+"""
