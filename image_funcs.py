@@ -21,7 +21,7 @@ def rotate_image(img):
     return img90, img180, img270
 
 #uses rotateimg to 
-def rotate_checker(originals, img, hash_size):
+def hash_rotate(originals, img, hash_size):
     temp_hash = average_hash(img, hash_size)
 
     img90, img180, img270 = rotate_image(img) 
@@ -47,7 +47,7 @@ def check_ifimage(path):
     return True
 
 #Creates array under a dictionary by hash and updates it when needed
-def _dict_array_update(dict, hash, element):
+def dict_array_update(dict, hash, element):
     if hash in dict: 
         temp = dict[hash]
         temp.append(element)
