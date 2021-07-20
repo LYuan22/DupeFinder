@@ -1,8 +1,12 @@
 from PIL import Image
-from hash import average_hash
+import math
 import os
-from image_funcs import check_ifimage, hash_rotate, get_image_size, _dict_array_update
+from image_funcs import check_ifimage, hash_rotate, get_image_size, dict_array_update
 
+def similarity_to_hashsize(similarity):
+    hashsize = 2 ** (similarity/11)
+    hashsize = math.sqrt(hashsize)
+    return int(hashsize)
 
 def find_duplicates(directory, hash_size):
     fnames = os.listdir(directory)
@@ -21,12 +25,13 @@ def find_duplicates(directory, hash_size):
                     #makes sure that the Original image is the one with higher resolution
                     if get_image_size(directory, image, temp):
                         originals[temp_hash] = temp
-                        _dict_array_update(duplicates, temp_hash, image)
+                        dict_array_update(duplicates, temp_hash, image)
                     else:
                         originals[temp_hash] = image
-                        _dict_array_update(duplicates, temp_hash, temp)
+                        dict_array_update(duplicates, temp_hash, temp)
                 else:
                     originals[temp_hash] = image
+    print(duplicates)
     return duplicates, originals
 
 
@@ -42,13 +47,15 @@ if(a.strip().lower() == "y"):
     print("\n\nYou saved {} mb of Space!".format(round(space_saved/1000000),2))
 else:
     """
-#90% - 20
-#100% - 45
+
+#80% - 16
+#90% - 32 9
+#100% - 64 10
 
 if __name__ == "__main__":
     directory = "Pictures"
     counter = 0
-    duplicates, originals = find_duplicates(directory, 45)
+    duplicates, originals = find_duplicates(directory, 8)
 
     hashes = originals.keys()
     for key in hashes:
@@ -61,15 +68,3 @@ if __name__ == "__main__":
             print()
     if counter == 0:
         print("No Duplicates Found")
-
-
-
-""" USE THIS FOR SIMILARITY
-    path = os.path.join(directory, 'dead giant.jpg')
-    path1 = os.path.join(directory, 'giant filter.jpg')
-    img = Image.open(path)
-    img1 = Image.open(path1)
-    hash = average_hash(img, 40)
-    hash1 = average_hash(img1, 40)
-    print(hash - hash1) #use this to do similarity as well as the scale
-"""
