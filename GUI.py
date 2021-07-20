@@ -10,22 +10,24 @@ from PyQt5.QtGui import QDoubleValidator, QIcon
 from PyQt5.QtCore import Qt, QUrl
 import sys
 import os
-from main import find_duplicates
+import math
+from main import find_duplicates, similarity_to_hashsize
 
-"""
-Add Similarity slider + number
-    Database to save last opened folder and previously open folders
+"""    Save Dupes and Originals as Global
+    Grid Layout for the scroll
+Add Database to save last opened folder and previously open folders
     Delete items
     Find a way to add databases for results to check multiple folders maybe?
     Add Checkboxes during Find_duplicates
     Delete options
     Make similarity work
+    Change Hash Function
     Enable Folder Drag and Drop
 """
 
-
-FOLDERPATH = ''
 SIMILARITY_LEVEL = 90
+FOLDERPATH = ''
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -51,10 +53,11 @@ class Ui_MainWindow(object):
 
         
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 600, 800))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 171, 600, 800))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         
-
+        self.scroll_GridLayout = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
+        self.scroll_GridLayout.setObjectName('scroll_GridLayout')
 
 
 
@@ -80,22 +83,21 @@ class Ui_MainWindow(object):
         self.Slider_Label.setObjectName("label")
         self.Slider_Label.setText(_translate("MainWindow", "Similarity"))
 
-        self.horizontalSlider = QtWidgets.QSlider(self.centralwidget)
-        self.horizontalSlider.setGeometry(QtCore.QRect(115, 73, 160, 22))
-        self.horizontalSlider.setOrientation(QtCore.Qt.Horizontal)
-        self.horizontalSlider.setObjectName("horizontalSlider")
-        self.horizontalSlider.setMinimum(0)
-        self.horizontalSlider.setMaximum(100)
-        self.horizontalSlider.setSingleStep(5)
-        self.horizontalSlider.setTickPosition(QtWidgets.QSlider.TicksAbove)
-        self.horizontalSlider.setTickInterval(5)
+        self.Similarity_Slider = QtWidgets.QSlider(self.centralwidget)
+        self.Similarity_Slider.setSliderPosition(SIMILARITY_LEVEL)
+        self.Similarity_Slider.setGeometry(QtCore.QRect(115, 73, 160, 22))
+        self.Similarity_Slider.setOrientation(QtCore.Qt.Horizontal)
+        self.Similarity_Slider.setObjectName("horizontalSlider")
+        self.Similarity_Slider.setMinimum(10)
+        self.Similarity_Slider.setMaximum(100)
+        self.Similarity_Slider.setTickPosition(QtWidgets.QSlider.TicksAbove)
+        self.Similarity_Slider.setTickInterval(10)
+        self.Similarity_Slider.valueChanged.connect(self.slider_change)
 
-        self.similarity_edit = QtWidgets.QLineEdit(self.centralwidget)
-        self.similarity_edit.setGeometry(QtCore.QRect(285, 73, 50, 22))
-        self.similarity_edit.setObjectName("similarity_edit")
-        self.similarity_edit.setText(_translate("MainWindow", str(SIMILARITY_LEVEL))) #gna be string for int of similarity
-        self.similarity_edit.setValidator(QDoubleValidator(0,100,2))
-
+        self.similarity_text = QtWidgets.QLabel(self.centralwidget)
+        self.similarity_text.setGeometry(QtCore.QRect(285, 73, 50, 22))
+        self.similarity_text.setObjectName("similarity_edit")
+        self.similarity_text.setText(_translate("MainWindow", str(SIMILARITY_LEVEL) + '%'))
 
 
         #Find Duplicate Button
@@ -104,16 +106,15 @@ class Ui_MainWindow(object):
         self.Find_Dupes_Button.setObjectName("pushButton")
         self.Find_Dupes_Button.setText(_translate("MainWindow", "Find Duplicates"))
         self.Find_Dupes_Button.setStyleSheet("background-color: rgb(220, 220, 220);")
-        #self.pushButton.clicked.connect(self.msg)
+        self.Find_Dupes_Button.clicked.connect(self.get_dupes)
 
 
 
         #Check Box to select Folders
-        self.checkBox = QtWidgets.QCheckBox(self.scrollAreaWidgetContents)
-        self.checkBox.setGeometry(QtCore.QRect(25, 140, 16, 16))
-        self.checkBox.setText("")
+        self.checkBox = QtWidgets.QCheckBox(self.centralwidget)
+        self.checkBox.setText("asdfadsfasdfdafs")
         self.checkBox.setObjectName("checkBox")
-
+        self.scroll_GridLayout.addWidget(self.checkBox, 1,1,1,1)
     
         #Menu Bar
         MainWindow.setCentralWidget(self.centralwidget)
@@ -145,11 +146,34 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def open_folder(self):
+        global FOLDERPATH
         FOLDERPATH = QFileDialog.getExistingDirectory()
         newtext = "Folder: "+ str(FOLDERPATH)
         self.Folder_Label.setText(newtext)
 
-    
+    def no_folder_popup(self):
+        msg = QMessageBox()
+        msg.setWindowTitle("Dupefinder")
+        msg.setText("No Folder Selected")
+        msg.setIcon(QMessageBox.Warning)
+        msg.setWindowIcon(QtGui.QIcon('logo.png'))
+        x = msg.exec()
+
+
+    def slider_change(self):
+        new_value = self.Similarity_Slider.value()
+        global SIMILARITY_LEVEL
+        SIMILARITY_LEVEL = new_value
+        self.similarity_text.setText(str(new_value)+ '%')
+
+    def get_dupes(self):
+        if FOLDERPATH != '':
+            global DUPLICATES, ORIGINALS
+            DUPLICATES, ORIGINALS = find_duplicates(FOLDERPATH, similarity_to_hashsize(SIMILARITY_LEVEL))
+        else:
+            self.no_folder_popup()
+
+
 
 if __name__ == "__main__":
     import sys
