@@ -12,7 +12,7 @@ def find_duplicates(directory, hash_size):
     fnames = os.listdir(directory)
     originals = {}
     duplicates = {}
-    print("Finding Duplicates Now!\n")
+    #print("Finding Duplicates Now!\n")
     for image in fnames:
         path = os.path.join(directory, image)
         if check_ifimage(path) == True:
@@ -31,22 +31,14 @@ def find_duplicates(directory, hash_size):
                         dict_array_update(duplicates, temp_hash, temp)
                 else:
                     originals[temp_hash] = image
-    print(hash_size)
     return duplicates, originals
 
 
-""" DELETE STUFF (RIPPED FORM OLD THING)
-a = input("Do you want to delete these {} Images? Press Y or N:  ".format(len(duplicates)))
-space_saved = 0
-if(a.strip().lower() == "y"):
-    for duplicate in duplicates:
-        space_saved += os.path.getsize(os.path.join(self.directory,duplicate))        
-        os.remove(os.path.join(self.directory,duplicate))
-        print("{} Deleted Succesfully!".format(duplicate))
-    
-    print("\n\nYou saved {} mb of Space!".format(round(space_saved/1000000),2))
-else:
-    """
+def delete_picture(directory, duplicate):
+    space_saved = os.path.getsize(os.path.join(directory, duplicate))
+    os.remove(os.path.join(directory, duplicate))
+    return space_saved
+
 
 #80% - 16
 #90% - 32 9
