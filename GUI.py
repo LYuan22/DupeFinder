@@ -11,22 +11,19 @@ from PyQt5.QtCore import Qt, QUrl
 import sys
 import os
 import math
-from main import find_duplicates, similarity_to_hashsize
+from main import find_duplicates, similarity_to_hashsize, delete_picture
 
-"""Save Dupes and Originals as Global
-    Grid Layout for the scroll
+""" Get rid of grid layout if possible
 Add Database to save last opened folder and previously open folders
-    Delete items
     Find a way to add databases for results to check multiple folders maybe?
-    Add Checkboxes during Find_duplicates
     Delete options
-    Make similarity work
     Change Hash Function
     Enable Folder Drag and Drop
 """
 
 SIMILARITY_LEVEL = 90
 FOLDERPATH = ''
+SPACE_SAVED = 0
 
 
 class Ui_MainWindow(object):
@@ -41,9 +38,7 @@ class Ui_MainWindow(object):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setStyleSheet("background-color: rgb(240, 240, 240);")
         self.centralwidget.setObjectName("centralwidget")
-        
-
-
+    
 
         self.scrollArea = QtWidgets.QScrollArea(self.centralwidget)
         self.scrollArea.setGeometry(QtCore.QRect(0, 171, 600, 629))
@@ -69,7 +64,7 @@ class Ui_MainWindow(object):
 
         self.Browse_Folder_Button = QtWidgets.QPushButton(self.centralwidget)
         self.Browse_Folder_Button.setGeometry(QtCore.QRect(20, 40, 100, 22))
-        self.Browse_Folder_Button.setObjectName("pushButton")
+        self.Browse_Folder_Button.setObjectName("Browse_Folder_Button")
         self.Browse_Folder_Button.setText(_translate("MainWindow", "Browse Folders"))
         self.Browse_Folder_Button.setStyleSheet("background-color: rgb(220, 220, 220);")
         self.Browse_Folder_Button.clicked.connect(self.open_folder)
@@ -134,7 +129,6 @@ class Ui_MainWindow(object):
         self.actionRecent_Folders.setText(_translate("MainWindow", "Recent Folders"))
         self.actionRecent_Folders.setShortcut(_translate("MainWindow", "Ctrl+Y"))
         self.menubar.addAction(self.menuFile.menuAction())
-    
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def open_folder(self):
@@ -151,7 +145,6 @@ class Ui_MainWindow(object):
         msg.setWindowIcon(QtGui.QIcon('logo.png'))
         x = msg.exec()
 
-
     def slider_change(self):
         new_value = self.Similarity_Slider.value()
         global SIMILARITY_LEVEL
@@ -165,6 +158,7 @@ class Ui_MainWindow(object):
             self.print_dupes(duplicates, originals)
         else:
             self.no_folder_popup()
+
     def print_dupes(self, duplicates, originals):
         #folder, Double click to open (or right click), size
         counter = 0
@@ -174,7 +168,7 @@ class Ui_MainWindow(object):
                 orig = originals[o_key]
                 self.checkbox = QCheckBox(orig)
                 self.checkbox.setCheckState(Qt.Unchecked)
-                self.checkbox.setStyleSheet("background-color: rgb(100, 100, 100);")
+                self.checkbox.setStyleSheet("background-color: rgb(120, 120, 120);")
                 self.scroll_GridLayout.addWidget(self.checkbox, counter, 0, 1,1)
                 counter += 1
                 dupes = duplicates[o_key]
@@ -183,33 +177,64 @@ class Ui_MainWindow(object):
                     self.checkbox.setCheckState(Qt.Unchecked)
                     self.scroll_GridLayout.addWidget(self.checkbox, counter, 0, 1,1)
                     counter += 1
+        self.create_del_button()
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
 
-    def two_buttons(self): #2 Checkboxes for Select All Dupes and 
-        #Check Box to select Folders
-        self.checkBox = QtWidgets.QCheckBox(self.centralwidget)
-        self.checkBox.setText("asdfadsfasdfdafs")
-        self.checkBox.setObjectName("checkBox")
-        self.scroll_GridLayout.addWidget(self.checkBox, 1,1,1,1)
-        #Check Box to select Folders
-        self.checkBox = QtWidgets.QCheckBox(self.centralwidget)
-        self.checkBox.setText("asdfadsfasdfdafs")
-        self.checkBox.setObjectName("checkBox")
-        self.scroll_GridLayout.addWidget(self.checkBox, 1,1,1,1)
-
-    def delete_checked(self):
-        pass
-
-    #clears the gridlayout everytime find_duplicates
+    #deletes first element in scrollArea
     def clear_elements(self):
-        item = self.scroll_GridLayout.takeAt(0)
-        if item != None:
+        counter = 0
+        item = self.scroll_GridLayout.itemAt(0)
+        while item != None:
             widget = item.widget()
             widget.deleteLater()
+            counter = counter + 1
+            item = self.scroll_GridLayout.itemAt(counter)
 
+    def delete_selected(self):
+        selected = []
+        counter = 0
+        item = self.scroll_GridLayout.itemAt(counter)
+        while item != None:
+            widget = item.widget()
+            if widget.isChecked():
+                global SPACE_SAVED
+                SPACE_SAVED += delete_picture(FOLDERPATH, widget.text())
+                selected.append(widget)
+            counter = counter + 1
+            item = self.scroll_GridLayout.itemAt(counter)
+        self.get_dupes()
+        #make a popup window saying how much space is saved, and a pop
+        if SPACE_SAVED == 0:
+            self.none_selected_popup()
+        else:
+            self.space_saved_popup()
+        SPACE_SAVED = 0
 
+    def none_selected_popup(self):
+        msg = QMessageBox()
+        msg.setWindowTitle("Dupefinder")
+        msg.setText("Nothing Selected")
+        msg.setIcon(QMessageBox.Warning)
+        msg.setWindowIcon(QtGui.QIcon('logo.png'))
+        x = msg.exec()
 
+    def space_saved_popup(self):
+        msg = QMessageBox()
+        msg.setWindowTitle("Dupefinder")
+        msg.setText("Space Saved: " + str(SPACE_SAVED))
+        msg.setIcon(QMessageBox.Information)
+        msg.setWindowIcon(QtGui.QIcon('logo.png'))
+        x = msg.exec()
 
+    def create_del_button(self): #2 Buttons to delete pictures
+        self.Del_Dupes_Button = QtWidgets.QPushButton(self.centralwidget)
+        self.Del_Dupes_Button.setGeometry(QtCore.QRect(20, 130, 100, 23))
+        self.Del_Dupes_Button.setObjectName("Del_Dupes_Button")
+        self.Del_Dupes_Button.setText("Delete Selected")
+        self.Del_Dupes_Button.setStyleSheet("background-color: rgb(220, 220, 220);")
+        self.Del_Dupes_Button.clicked.connect(self.delete_selected)
+        self.Del_Dupes_Button.show()
+        
 
 if __name__ == "__main__":
     import sys
