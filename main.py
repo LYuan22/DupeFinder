@@ -4,9 +4,9 @@ import os
 from image_funcs import check_ifimage, hash_rotate, get_image_size, dict_array_update
 
 def similarity_to_hashsize(similarity):
-    hashsize = 2 ** (similarity/11)
-    hashsize = math.sqrt(hashsize)
-    return int(hashsize)
+    hash_size = 2 ** ((similarity + 1)/11)
+    hash_size = math.sqrt(hash_size) + 0.6
+    return int(hash_size)
 
 def find_duplicates(directory, hash_size):
     fnames = os.listdir(directory)
@@ -31,7 +31,7 @@ def find_duplicates(directory, hash_size):
                         dict_array_update(duplicates, temp_hash, temp)
                 else:
                     originals[temp_hash] = image
-    print(duplicates)
+    print(hash_size)
     return duplicates, originals
 
 
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     directory = "Pictures"
     counter = 0
     duplicates, originals = find_duplicates(directory, 8)
-
+    print(originals)
     hashes = originals.keys()
     for key in hashes:
         if key in duplicates:
