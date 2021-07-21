@@ -5,7 +5,7 @@
 #open folder(on file button)
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QMessageBox, QLineEdit, QFileDialog, QInputDialog
+from PyQt5.QtWidgets import QMessageBox, QLineEdit, QFileDialog, QInputDialog, QCheckBox
 from PyQt5.QtGui import QDoubleValidator, QIcon
 from PyQt5.QtCore import Qt, QUrl
 import sys
@@ -13,7 +13,7 @@ import os
 import math
 from main import find_duplicates, similarity_to_hashsize
 
-"""    Save Dupes and Originals as Global
+"""Save Dupes and Originals as Global
     Grid Layout for the scroll
 Add Database to save last opened folder and previously open folders
     Delete items
@@ -46,14 +46,14 @@ class Ui_MainWindow(object):
 
 
         self.scrollArea = QtWidgets.QScrollArea(self.centralwidget)
-        self.scrollArea.setGeometry(QtCore.QRect(0, 171, 600, 800))
+        self.scrollArea.setGeometry(QtCore.QRect(0, 171, 600, 629))
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollArea.setStyleSheet("background-color: rgb(220, 220, 220);")
 
         
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 171, 600, 800))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 600, 629))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         
         self.scroll_GridLayout = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
@@ -107,14 +107,6 @@ class Ui_MainWindow(object):
         self.Find_Dupes_Button.setText(_translate("MainWindow", "Find Duplicates"))
         self.Find_Dupes_Button.setStyleSheet("background-color: rgb(220, 220, 220);")
         self.Find_Dupes_Button.clicked.connect(self.get_dupes)
-
-
-
-        #Check Box to select Folders
-        self.checkBox = QtWidgets.QCheckBox(self.centralwidget)
-        self.checkBox.setText("asdfadsfasdfdafs")
-        self.checkBox.setObjectName("checkBox")
-        self.scroll_GridLayout.addWidget(self.checkBox, 1,1,1,1)
     
         #Menu Bar
         MainWindow.setCentralWidget(self.centralwidget)
@@ -168,10 +160,54 @@ class Ui_MainWindow(object):
 
     def get_dupes(self):
         if FOLDERPATH != '':
-            global DUPLICATES, ORIGINALS
-            DUPLICATES, ORIGINALS = find_duplicates(FOLDERPATH, similarity_to_hashsize(SIMILARITY_LEVEL))
+            self.clear_elements()
+            duplicates, originals = find_duplicates(FOLDERPATH, similarity_to_hashsize(SIMILARITY_LEVEL))
+            self.print_dupes(duplicates, originals)
         else:
             self.no_folder_popup()
+    def print_dupes(self, duplicates, originals):
+        #folder, Double click to open (or right click), size
+        counter = 0
+        orig_keys = originals.keys()
+        for o_key in orig_keys:
+            if o_key in duplicates:
+                orig = originals[o_key]
+                self.checkbox = QCheckBox(orig)
+                self.checkbox.setCheckState(Qt.Unchecked)
+                self.checkbox.setStyleSheet("background-color: rgb(100, 100, 100);")
+                self.scroll_GridLayout.addWidget(self.checkbox, counter, 0, 1,1)
+                counter += 1
+                dupes = duplicates[o_key]
+                for dupe in dupes:
+                    self.checkbox = QCheckBox(dupe)
+                    self.checkbox.setCheckState(Qt.Unchecked)
+                    self.scroll_GridLayout.addWidget(self.checkbox, counter, 0, 1,1)
+                    counter += 1
+        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+
+    def two_buttons(self): #2 Checkboxes for Select All Dupes and 
+        #Check Box to select Folders
+        self.checkBox = QtWidgets.QCheckBox(self.centralwidget)
+        self.checkBox.setText("asdfadsfasdfdafs")
+        self.checkBox.setObjectName("checkBox")
+        self.scroll_GridLayout.addWidget(self.checkBox, 1,1,1,1)
+        #Check Box to select Folders
+        self.checkBox = QtWidgets.QCheckBox(self.centralwidget)
+        self.checkBox.setText("asdfadsfasdfdafs")
+        self.checkBox.setObjectName("checkBox")
+        self.scroll_GridLayout.addWidget(self.checkBox, 1,1,1,1)
+
+    def delete_checked(self):
+        pass
+
+    #clears the gridlayout everytime find_duplicates
+    def clear_elements(self):
+        item = self.scroll_GridLayout.takeAt(0)
+        if item != None:
+            widget = item.widget()
+            widget.deleteLater()
+
+
 
 
 
