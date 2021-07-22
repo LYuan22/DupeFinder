@@ -1,11 +1,7 @@
 from image_funcs import check_ifimage, hash_rotate, get_image_size, dict_array_update, rotate_similarity_checker, \
                         similarity_to_hashsize, hashsize_to_similarity, get_similarity, find_duplicates, delete_picture, show_image, get_size, convert_size
 
-
-
-
 if __name__ == "__main__":
-
     directory = "Pictures"
     counter = 0
     duplicates, originals = find_duplicates(directory, 8)
