@@ -1,0 +1,5 @@
+PyQt5
+sys
+os
+Pillow
+math
