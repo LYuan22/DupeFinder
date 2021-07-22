@@ -8,7 +8,6 @@ from image_funcs import find_duplicates, similarity_to_hashsize, delete_picture,
 
 FOLDERPATH = ''
 SPACE_SAVED = 0
-HASH_SIZE = 27
 SIMILARITY_LEVEL = 90
 
 
@@ -20,7 +19,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "DupeFinder"))
         MainWindow.setWindowIcon(QIcon('logo.png'))
         
-
+        #basic setup
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setStyleSheet("background-color: rgb(240, 240, 240);")
         self.centralwidget.setObjectName("centralwidget")
@@ -42,7 +41,7 @@ class Ui_MainWindow(object):
 
 
 
-        #Folders
+        #Folder Label and Button
         self.Folder_Label = QLabel(self.centralwidget)
         self.Folder_Label.setGeometry(QRect(125, 40, 600, 22))
         self.Folder_Label.setObjectName("label")
@@ -58,7 +57,7 @@ class Ui_MainWindow(object):
 
 
 
-        #Slider
+        #Slider and Text
         self.Slider_Label = QLabel(self.centralwidget)
         self.Slider_Label.setGeometry(QRect(25, 73, 80, 22))
         self.Slider_Label.setObjectName("label")
@@ -117,12 +116,14 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuFile.menuAction())
         QMetaObject.connectSlotsByName(MainWindow)
 
+    #action for when open folder or browse folder is pressed
     def open_folder(self):
         global FOLDERPATH
         FOLDERPATH = QFileDialog.getExistingDirectory()
         newtext = "Folder: "+ str(FOLDERPATH)
         self.Folder_Label.setText(newtext)
 
+    #creates a popup if no folder was selected
     def no_folder_popup(self):
         msg = QMessageBox()
         msg.setWindowTitle("Dupefinder")
@@ -131,14 +132,14 @@ class Ui_MainWindow(object):
         msg.setWindowIcon(QIcon('logo.png'))
         x = msg.exec()
 
+    #Controls Slider Actions
     def slider_change(self):
         new_value = self.Similarity_Slider.value()
         global SIMILARITY_LEVEL
         SIMILARITY_LEVEL = new_value
         self.similarity_text.setText(str(new_value)+ '%')
-        #global HASH_SIZE
-        #HASH_SIZE = similarity_to_hashsize(new_value)
 
+    #Called when find duplicates button is pressed
     def get_dupes(self):
         if FOLDERPATH != '':
             self.clear_elements()
@@ -147,6 +148,7 @@ class Ui_MainWindow(object):
         else:
             self.no_folder_popup()
 
+    #Creates text in the Scroll Area with Originals and Duplicates
     def print_dupes(self, duplicates, originals):
         #folder, Double click to open (or right click), size
         counter = 0
@@ -174,7 +176,7 @@ class Ui_MainWindow(object):
         self.create_del_button()
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
 
-    #deletes first element in scrollArea
+    #deletes all elements in scrollArea
     def clear_elements(self):
         counter = 0
         item = self.scroll_GridLayout.itemAt(0)
@@ -184,6 +186,7 @@ class Ui_MainWindow(object):
             counter = counter + 1
             item = self.scroll_GridLayout.itemAt(counter)
 
+    #checks which boxes are checked and deletes the image accordingly
     def delete_selected(self):
         selected = []
         counter = 0
@@ -197,13 +200,15 @@ class Ui_MainWindow(object):
             counter = counter + 1
             item = self.scroll_GridLayout.itemAt(counter)
         self.get_dupes()
-        #make a popup window saying how much space is saved, and a pop
+        #make a popup window saying how much space is saved or a popup that says that nothing was selected to delete
         if space_saved == 0:
             self.none_selected_popup()
         else:
             self.space_saved_popup(space_saved)
+        global SPACE_SAVED
         SPACE_SAVED = 0
 
+    #stops the selection of nothing to delete
     def none_selected_popup(self):
         msg = QMessageBox()
         msg.setWindowTitle("Dupefinder")
@@ -212,6 +217,7 @@ class Ui_MainWindow(object):
         msg.setWindowIcon(QIcon('logo.png'))
         x = msg.exec()
 
+    #make a popup window saying how much space is saved
     def space_saved_popup(self, space_saved):
         msg = QMessageBox()
         msg.setWindowTitle("Dupefinder")
@@ -220,7 +226,8 @@ class Ui_MainWindow(object):
         msg.setWindowIcon(QIcon('logo.png'))
         x = msg.exec()
 
-    def create_del_button(self): #2 Buttons to delete pictures
+    #Creates delete button
+    def create_del_button(self):
         self.Del_Dupes_Button = QPushButton(self.centralwidget)
         self.Del_Dupes_Button.setGeometry(QRect(130, 100, 100, 23))
         self.Del_Dupes_Button.setStyleSheet("background-color: rgb(220, 220, 220);")
@@ -229,8 +236,7 @@ class Ui_MainWindow(object):
         self.Del_Dupes_Button.clicked.connect(self.delete_selected)
         self.Del_Dupes_Button.show()
 
-
-
+    #Creates a button with the image that opens a photo viewer
     def create_show_image_button(self, counter, name):
         self.show_image_button = QPushButton()
         self.show_image_button.setStyleSheet("background-color: rgb(220, 220, 220);")
@@ -240,19 +246,21 @@ class Ui_MainWindow(object):
         self.show_image_button.clicked.connect(lambda: show_image(FOLDERPATH, name))
 
     
-
+    #Displays the size of the image
     def create_size_text(self, counter, name):
         self.size_text = QLabel()
         self.size_text.setObjectName("size_Text")
         self.size_text.setText(get_size(FOLDERPATH, name))
         self.scroll_GridLayout.addWidget(self.size_text, counter, 2, 1,1)
 
+    #Displays the similarity of the duplicate to the original
     def create_imgsimilarity_text(self, counter, orig, dupe):
         self.imgsimilarity_text = QLabel()
         self.imgsimilarity_text.setObjectName("similarity_text")
         self.imgsimilarity_text.setText(get_similarity(FOLDERPATH, orig, dupe))
         self.scroll_GridLayout.addWidget(self.imgsimilarity_text, counter, 3, 1, 1)
 
+    #Creates Name, Size, Similarity Labels
     def create_labels(self):
         self.name_label = QLabel(self.centralwidget)
         self.name_label.setObjectName("name_label")
@@ -281,5 +289,3 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
-
-#python -m PyQt5.uic.pyuic -x test.ui -o asdf.py 
