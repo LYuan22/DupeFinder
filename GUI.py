@@ -107,12 +107,6 @@ class Ui_MainWindow(object):
         self.actionOpen_Folder.setText(_translate("MainWindow", "Open Folder"))
         self.actionOpen_Folder.setShortcut(_translate("MainWindow", "Ctrl+O"))
         self.actionOpen_Folder.triggered.connect(lambda: self.open_folder())
-
-        self.actionRecent_Folders = QAction(self.centralwidget)
-        self.actionRecent_Folders.setObjectName("actionRecent_Folders")
-        self.menuFile.addAction(self.actionRecent_Folders)
-        self.actionRecent_Folders.setText(_translate("MainWindow", "Recent Folders"))
-        self.actionRecent_Folders.setShortcut(_translate("MainWindow", "Ctrl+Y"))
         self.menubar.addAction(self.menuFile.menuAction())
         QMetaObject.connectSlotsByName(MainWindow)
 
