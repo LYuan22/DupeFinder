@@ -1,9 +1,31 @@
 import os
 from PIL import Image
-from hash import average_hash
+from hash import average_hash, similarity, hash_to_hex, hash_equals
 import math
 
-
+def find_duplicates(directory, hash_size):
+    fnames = os.listdir(directory)
+    originals = {}
+    duplicates = {}
+    #print("Finding Duplicates Now!\n")
+    for image in fnames:
+        path = os.path.join(directory, image)
+        if check_ifimage(path) == True:
+            with Image.open(path) as img:
+                #Checks if rotated picture is in originals, otherwise gives normal temp_hash
+                temp_hash = hash_rotate(originals, img, hash_size)
+                if temp_hash in originals:
+                    temp = originals[temp_hash]
+                    #makes sure that the Original image is the one with higher resolution
+                    if get_image_size(directory, image, temp):
+                        originals[temp_hash] = temp
+                        dict_array_update(duplicates, temp_hash, image)
+                    else:
+                        originals[temp_hash] = image
+                        dict_array_update(duplicates, temp_hash, temp)
+                else:
+                    originals[temp_hash] = image
+    return duplicates, originals
 
 #function gets the size of both images, returns True if image2 is larger
 def get_image_size(dir, image1, image2):
@@ -23,19 +45,18 @@ def rotate_image(img):
 
 #uses rotate img to check if any are just rotated copies
 def hash_rotate(originals, img, hash_size):
-    temp_hash = average_hash(img, hash_size)
+    temp_hash = hash_to_hex(average_hash(img, hash_size))
 
     img90, img180, img270 = rotate_image(img) 
-    temp_hash90 = average_hash(img90, hash_size)
-    temp_hash180 = average_hash(img180, hash_size)
-    temp_hash270 = average_hash(img270, hash_size)
-
+    temp_hash90 = hash_to_hex(average_hash(img90, hash_size))
+    temp_hash180 = hash_to_hex(average_hash(img180, hash_size))
+    temp_hash270 = hash_to_hex(average_hash(img270, hash_size))
     if temp_hash90 in originals:
         temp_hash = temp_hash90
     elif temp_hash180 in originals:
         temp_hash = temp_hash180
     elif temp_hash270 in originals:
-        temp_hash = temp_hash270
+        temp_hash = temp_hash270    
     return temp_hash
     
 
@@ -61,18 +82,18 @@ def rotate_similarity_checker(orig, dupe):
     orig_hash = average_hash(orig, 50)
 
     img90, img180, img270 = rotate_image(dupe) 
-    dupe_hash90 = average_hash(img90, 50)
-    dupe_hash180 = average_hash(img180, 50)
-    dupe_hash270 = average_hash(img270, 50)
 
-    least_hash = dupe_hash - orig_hash
-    if dupe_hash90 - orig_hash < least_hash:
-        least_hash = dupe_hash90 - orig_hash
-    if dupe_hash180 - orig_hash < least_hash:
-        least_hash = dupe_hash180 - orig_hash
-    if dupe_hash270 - orig_hash < least_hash:
-        least_hash = dupe_hash270 - orig_hash
+    similarity90 = similarity(orig_hash, average_hash(img90, 50))
+    similarity180 = similarity(orig_hash, average_hash(img180, 50))
+    similarity270 = similarity(orig_hash, average_hash(img270, 50))
 
+    least_hash = similarity(dupe_hash, orig_hash)
+    if similarity90 < least_hash:
+        least_hash = similarity90
+    if similarity180 < least_hash:
+        least_hash = similarity180
+    if similarity270 < least_hash:
+        least_hash = similarity270
     return least_hash
 
 def similarity_to_hashsize(similarity):
@@ -93,32 +114,6 @@ def get_similarity(directory, orig, dupe):
 
     similarity = 100 - rotate_similarity_checker(orig_image, dupe_image)
     return str(similarity) + '%'
-
-
-def find_duplicates(directory, hash_size):
-    fnames = os.listdir(directory)
-    originals = {}
-    duplicates = {}
-    #print("Finding Duplicates Now!\n")
-    for image in fnames:
-        path = os.path.join(directory, image)
-        if check_ifimage(path) == True:
-            with Image.open(path) as img:
-                #Checks if rotated picture is in originals, otherwise gives normal temp_hash
-                temp_hash = hash_rotate(originals, img, hash_size)
-
-                if temp_hash in originals:
-                    temp = originals[temp_hash]
-                    #makes sure that the Original image is the one with higher resolution
-                    if get_image_size(directory, image, temp):
-                        originals[temp_hash] = temp
-                        dict_array_update(duplicates, temp_hash, image)
-                    else:
-                        originals[temp_hash] = image
-                        dict_array_update(duplicates, temp_hash, temp)
-                else:
-                    originals[temp_hash] = image
-    return duplicates, originals
 
 
 def delete_picture(directory, duplicate):
