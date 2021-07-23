@@ -138,7 +138,10 @@ class Ui_MainWindow(object):
         if FOLDERPATH != '':
             self.clear_elements()
             duplicates, originals = find_duplicates(FOLDERPATH, similarity_to_hashsize(SIMILARITY_LEVEL))
-            self.print_dupes(duplicates, originals)
+            if duplicates == {}:
+                self.no_dupes_found_popup()
+            else:
+                self.print_dupes(duplicates, originals)
         else:
             self.no_folder_popup()
 
@@ -274,6 +277,13 @@ class Ui_MainWindow(object):
         self.similarity_label.setGeometry(QRect(370, 145, 100, 23))
         self.similarity_label.show()
 
+    def no_dupes_found_popup(self):
+        msg = QMessageBox()
+        msg.setWindowTitle("Dupefinder")
+        msg.setText("No Duplicates Found")
+        msg.setIcon(QMessageBox.Warning)
+        msg.setWindowIcon(QIcon('logo.png'))
+        x = msg.exec()
 
 if __name__ == "__main__":
     import sys
