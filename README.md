@@ -18,7 +18,7 @@ Or if you don't trust me you can compile all the files into an exe with
 
 `pyinstaller --onefile -w GUI.py`
 
-then run the exe file in the 
+then run the exe file in the dist folder
 
 You should see this window
 
