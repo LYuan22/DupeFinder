@@ -14,9 +14,9 @@ Download the DupeFinder.exe file and run it.
 
 Or if you don't trust me you can compile all the files into an exe with
 
-'pip install pyinstaller'
+`pip install pyinstaller`
 
-'pyinstaller --onefile -w GUI.py'
+`pyinstaller --onefile -w GUI.py`
 
 then run the exe file in the 
 
