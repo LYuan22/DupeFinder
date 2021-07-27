@@ -10,7 +10,7 @@ It then gets the average black/white value of the image and compares every pixel
 
 **SETUP**
 
-Download all the files as a zip and make sure all of the files are in the same folder and run GUI.py. 
+Download all the files as a zip and make sure all of the files are in the same folder and run DupeFinder.exe 
 
 You should see this window
 
