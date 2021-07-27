@@ -2,7 +2,7 @@
 
 I built this project in order to help some photographer friends out with some of their photo editing as they would often save multiple similar photos with filters on them or different resolutions that online duplicate searchers didn't find. 
 
-This is a program that runs a hashing algorithm to look for duplicate photos in folders. The GUI is written using PyQt5. 
+This is a program that runs an average hashing algorithm to look for duplicate photos in folders. The GUI is written using PyQt5. 
 
 My hashing algorithm takes the image, shrinks it down and converts the entire picture to black and white. This solves both the filter issue as well as the differing resolutions as it shrinks the image down to at maximum a 50x50 image (depending on the similarity level the user selects)
 
