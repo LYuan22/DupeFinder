@@ -1,8 +1,8 @@
 from GUI import Ui_MainWindow
 from PyQt5.QtWidgets import *
+import sys
 
 if __name__ == "__main__":
-    import sys
     app = QApplication(sys.argv)
     MainWindow = QMainWindow()
     ui = Ui_MainWindow()
