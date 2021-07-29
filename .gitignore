@@ -2,3 +2,5 @@
 __pycache__
 Pictures
 pyinstaller.exe
+build
+dist
