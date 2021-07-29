@@ -4,3 +4,4 @@ Pictures
 pyinstaller.exe
 build
 dist
+main.spec
