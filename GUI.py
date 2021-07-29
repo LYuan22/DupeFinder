@@ -2,7 +2,6 @@ from PyQt5 import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-import sys
 from image_funcs import find_duplicates, similarity_to_hashsize, delete_picture, show_image, get_size, convert_size, get_similarity
 
 
@@ -284,12 +283,3 @@ class Ui_MainWindow(object):
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowIcon(QIcon('logo.png'))
         x = msg.exec()
-
-if __name__ == "__main__":
-    import sys
-    app = QApplication(sys.argv)
-    MainWindow = QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())
